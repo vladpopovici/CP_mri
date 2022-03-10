@@ -12,16 +12,20 @@ __all__ = ['WindowSampler', 'SlidingWindowSampler', 'RandomWindowSampler']
 
 from abc import ABC, abstractmethod
 import shapely.geometry as shg
+import numpy as np
+from collections.abc import Sequence
 
 from typing import NewType
 ImageShape = NewType("ImageShape", dict[str, int])
 
 
-class WindowSampler(ABC):
+class WindowSampler(Sequence):
     """
     Defines an interface for an image sampler that returns rectangular
     regions from the image.
     """
+    def __init__(self):
+        super().__init__()
 
     @abstractmethod
     def reset(self):
@@ -105,6 +109,9 @@ class WindowSampler(ABC):
     def __prev__(self):
         return self.prev()
 
+    def __len__(self):
+        return self.total_steps()
+
 
 class SlidingWindowSampler(WindowSampler):
     """
@@ -144,14 +151,14 @@ class SlidingWindowSampler(WindowSampler):
 
         img_w, img_h = self._image_shape
 
-        if w_size[0] < 2 or w_size[1] < 2:
+        if self._w_size[0] < 2 or self._w_size[1] < 2:
             raise ValueError('Window size too small.')
 
-        if img_w < start[0] + w_size[0] or img_h < start[1] + w_size[1]:
+        if img_w < start[0] + self._w_size[0] or img_h < start[1] + self._w_size[1]:
             raise ValueError('Start position and/or window size out of image.')
 
-        x, y = np.meshgrid(np.arange(start[0], img_w - w_size[0] + 1, step[0]),
-                           np.arange(start[1], img_h - w_size[1] + 1, step[1]))
+        x, y = np.meshgrid(np.arange(start[0], img_w - self._w_size[0] + 1, step[0]),
+                           np.arange(start[1], img_h - self._w_size[1] + 1, step[1]))
 
         tmp_top_left_corners = [p for p in zip(x.reshape((-1,)).tolist(),
                                                y.reshape((-1,)).tolist())]
@@ -173,6 +180,7 @@ class SlidingWindowSampler(WindowSampler):
                 if np.array(w).sum() >= nv_inside:
                     self._top_left_corners.append((x0, y0))
 
+            super().__init__()
         return
 
     def total_steps(self):
@@ -214,7 +222,18 @@ class SlidingWindowSampler(WindowSampler):
         else:
             raise StopIteration()
 
+    def __getitem__(self, item):
+        if 0 <= item < self.total_steps():
+            x0, y0 = self._top_left_corners[item]
+            x1 = min(x0 + self._w_size[0], self._image_shape[0])
+            y1 = min(y0 + self._w_size[1], self._image_shape[1])
 
+            return x0, y0, x1, y1
+        raise RuntimeError("Position outside bounds")
+##-
+
+
+##-
 class RandomWindowSampler(WindowSampler):
     """
     A random window image sampler. It returns a sequence of random window coordinates
@@ -252,10 +271,10 @@ class RandomWindowSampler(WindowSampler):
         nv_inside = max(1, min(nv_inside, 4))  # >=1 && <=4
         img_w, img_h = self._image_shape
 
-        if w_size[0] < 2 or w_size[1] < 2:
+        if self._w_size[0] < 2 or self._w_size[1] < 2:
             raise ValueError('Window size too small.')
 
-        if img_w < w_size[0] or img_h < w_size[1]:
+        if img_w < self._w_size[0] or img_h < self._w_size[1]:
             raise ValueError('Window size larger than image.')
 
         if self._poly is None:
@@ -290,6 +309,8 @@ class RandomWindowSampler(WindowSampler):
                 if np.array(w).sum() >= nv_inside:
                     self._top_left_corners.append((x0, y0))
                     k += 1
+
+            super().__init__()
         return
 
     def total_steps(self):
@@ -332,4 +353,13 @@ class RandomWindowSampler(WindowSampler):
             return x0, y0, x1, y1
         else:
             raise StopIteration()
+
+    def __getitem__(self, item):
+        if 0 <= item < self.total_steps():
+            x0, y0 = self._top_left_corners[item]
+            x1 = x0 + self._w_size[0]
+            y1 = y0 + self._w_size[1]
+
+            return x0, y0, x1, y1
+        raise RuntimeError("Position outside bounds")
 ##
