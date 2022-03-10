@@ -1,0 +1,11 @@
+<component name="CopyrightManager">
+  <settings default="vlad-mit">
+    <module2copyright>
+      <element module="All" copyright="vlad-mit" />
+    </module2copyright>
+    <LanguageOptions name="__TEMPLATE__">
+      <option name="block" value="false" />
+      <option name="separateAfter" value="true" />
+    </LanguageOptions>
+  </settings>
+</component>
