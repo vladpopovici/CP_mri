@@ -64,6 +64,10 @@ class MRI(object):
         # width, height for a given level
         return tuple(self._pyramid_levels[:, level])
 
+    def level_shape(self, level: int=0) -> dict[str, int]:
+        return {'width': self._pyramid_levels[0, level],
+                'height': self._pyramid_levels[1, level]}
+
     @property
     def nlevels(self) -> int:
         return self._pyramid_levels.shape[1]

@@ -123,6 +123,7 @@ class SlidingWindowSampler(WindowSampler):
             and vertical steps. Defaults to (1,1).
         poly : shapely.geometry.Polygon
             (if not None) Defines the region within which the windows will be generated.
+            Note that this may be a union of polygons, allowing for rgeater flexibility.
         nv_inside : int
             number of corners/vertices of the the window required to be inside the
             polygon defining the region. This relaxes the constraint that whole window
@@ -228,6 +229,7 @@ class RandomWindowSampler(WindowSampler):
             Number of windows to return.
         poly : shapely.geometry.Polygon
             (if not None) Defines the region within which the windows will be generated.
+            Note that this may be a union of polygons, allowing for rgeater flexibility.
         rng_seed : int or None
             random number generator seed for initialization in a known state. If None,
             the seed is set by the system.
