@@ -115,7 +115,7 @@ class BinaryMask(object):
             l = 0
         max_level = current_level + l
 
-        with zarr.open_group(str(dst_path.with_suffix('.zarr'), mode='w') as zroot:
+        with zarr.open_group(str(dst_path.with_suffix('.zarr')), mode='w') as zroot:
             pyramid_info = []
             # up-sampling:
             for level in range(min_level, max_level):
