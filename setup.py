@@ -25,9 +25,12 @@ setup(
     author_email='popovici@bioxlab.org',
     license='MIT',
     packages=['cp_mri'],
+    python_requires='>=3.8, <4',
     install_requires=['shapely',
                       'numpy',
                       'zarr',
+                      'tifffile',
+                      'scikit-image',
                       ],
 
     classifiers=[
